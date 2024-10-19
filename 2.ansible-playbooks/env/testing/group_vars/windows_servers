@@ -1,5 +1,0 @@
----
-ansible_user: malnajdi
-ansible_password: 'Windows123'
-ansible_connection: ssh
-ansible_shell_type: cmd

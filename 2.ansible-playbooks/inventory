@@ -1,0 +1,4 @@
+[all]
+192.168.178.40 ansible_user=albasha1 ansible_ssh_private_key_file=~/.ssh/albasha.demo
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3.12
