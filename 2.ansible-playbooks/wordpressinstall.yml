@@ -26,6 +26,11 @@
         dest: /tmp/
         remote_src: yes
 
+    - name: Remove existing WordPress directory if it exists
+      file:
+        path: /var/www/html/wordpress
+        state: absent
+
     - name: Move WordPress to web directory
       command: mv /tmp/wordpress /var/www/html/
 
@@ -66,6 +71,20 @@
 
     - name: Enable Apache rewrite module
       command: a2enmod rewrite
+
+    - name: Disable conflicting Apache mpm_event module
+      command: a2dismod mpm_event
+
+    - name: Enable required Apache mpm_prefork module
+      command: a2enmod mpm_prefork
+
+    - name: Enable PHP module for Apache
+      shell: |
+        available_php_modules=$(ls /etc/apache2/mods-available/ | grep -oE 'php[0-9.]+\.load' | sed 's/\.load//')
+        for module in $available_php_modules; do
+          a2enmod $module && break
+        done
+      ignore_errors: yes
 
     - name: Restart Apache
       systemd:
