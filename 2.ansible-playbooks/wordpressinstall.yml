@@ -1,0 +1,78 @@
+---
+- name: Install WordPress on Apache Server
+  hosts: wordpress_server
+  become: yes
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - wget
+          - apache2
+          - php
+          - php-mysql
+          - libapache2-mod-php
+          - mysql-server
+        state: present
+        update_cache: yes
+
+    - name: Download latest WordPress
+      get_url:
+        url: https://wordpress.org/latest.tar.gz
+        dest: /tmp/latest.tar.gz
+
+    - name: Extract WordPress
+      unarchive:
+        src: /tmp/latest.tar.gz
+        dest: /tmp/
+        remote_src: yes
+
+    - name: Move WordPress to web directory
+      command: mv /tmp/wordpress /var/www/html/
+
+    - name: Set ownership for WordPress directory
+      file:
+        path: /var/www/html/wordpress
+        state: directory
+        owner: www-data
+        group: www-data
+        recurse: yes
+
+    - name: Set permissions for WordPress directory
+      file:
+        path: /var/www/html/wordpress
+        state: directory
+        mode: '0755'
+        recurse: yes
+
+    - name: Configure Apache for WordPress
+      copy:
+        dest: /etc/apache2/sites-available/wordpress.conf
+        content: |
+          <VirtualHost *:80>
+              ServerAdmin admin@domain.com
+              DocumentRoot /var/www/html/wordpress
+              ServerName your_domain_or_IP
+
+              <Directory /var/www/html/wordpress/>
+                  AllowOverride All
+              </Directory>
+
+              ErrorLog ${APACHE_LOG_DIR}/error.log
+              CustomLog ${APACHE_LOG_DIR}/access.log combined
+          </VirtualHost>
+
+    - name: Enable WordPress site
+      command: a2ensite wordpress.conf
+
+    - name: Enable Apache rewrite module
+      command: a2enmod rewrite
+
+    - name: Restart Apache
+      systemd:
+        name: apache2
+        state: restarted
+
+    - name: Clean up WordPress archive
+      file:
+        path: /tmp/latest.tar.gz
+        state: absent

@@ -1,0 +1,57 @@
+---
+- name: Uninstall WordPress and remove all configurations
+  hosts: wordpress_server
+  become: yes
+  tasks:
+    - name: Stop Apache service
+      systemd:
+        name: apache2
+        state: stopped
+
+    - name: Remove WordPress directory
+      file:
+        path: /var/www/html/wordpress
+        state: absent
+
+    - name: Remove Apache WordPress configuration
+      file:
+        path: /etc/apache2/sites-available/wordpress.conf
+        state: absent
+
+    - name: Disable WordPress site
+      command: a2dissite wordpress.conf
+      ignore_errors: yes
+
+    - name: Disable Apache rewrite module
+      command: a2dismod rewrite
+      ignore_errors: yes
+
+    - name: Uninstall required packages
+      apt:
+        name:
+          - wget
+          - apache2
+          - php
+          - php-mysql
+          - libapache2-mod-php
+          - mysql-server
+        state: absent
+        purge: yes
+
+    - name: Clean up Apache logs
+      file:
+        path: /var/log/apache2
+        state: absent
+
+    - name: Remove MySQL data directory
+      file:
+        path: /var/lib/mysql
+        state: absent
+
+    - name: Remove temporary files
+      file:
+        path: /tmp/latest.tar.gz
+        state: absent
+
+    - name: Reload systemd to apply changes
+      command: systemctl daemon-reload
