@@ -1,7 +1,4 @@
 [all]
-ansible-tutorial-1.malnajdi.com
-ansible-tutorial-2.malnajdi.com
-ansible-tutorial-3.malnajdi.com
-
+192.168.178.40 ansible_user=albasha1 ansible_ssh_private_key_file=~/.ssh/albasha.demo
 [all:vars]
-ansible_python_interpreter = /usr/bin/python3
+ansible_python_interpreter=/usr/bin/python3.12
